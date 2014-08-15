@@ -1,4 +1,6 @@
-#include<../header>
+#include "../header.h"
+#include "../readn.c"
+#include "../writen.c"
 
 int main(int argc,char **argv)
 {
@@ -25,4 +27,13 @@ int main(int argc,char **argv)
 		}
 		close(clifd);
 	}
+}
+
+void str_echo(int fd)
+{
+	char buff[100];
+	size_t len;
+	
+	len = readn(fd,buff,sizeof(buff));
+	writen(fd,buff,len);
 }

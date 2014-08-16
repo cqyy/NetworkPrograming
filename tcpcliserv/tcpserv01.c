@@ -1,16 +1,15 @@
 #include "../header.h"
-#include "../readn.c"
-#include "../writen.c"
+#include "strecho.c"
 
 int main(int argc,char **argv)
 {
-	sockaddr_t addr,cliaddr;
+	struct sockaddr_in addr,cliaddr;
 	int serfd,clifd;
-	int clilen;
+	socklen_t clilen;
 	int chipid;
 
 	bzero(&addr,sizeof(addr));
-	serfd = sock(AF_INET,SOCK_STREAM,0);
+	serfd = socket(AF_INET,SOCK_STREAM,0);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = 9002;
@@ -27,13 +26,4 @@ int main(int argc,char **argv)
 		}
 		close(clifd);
 	}
-}
-
-void str_echo(int fd)
-{
-	char buff[100];
-	size_t len;
-	
-	len = readn(fd,buff,sizeof(buff));
-	writen(fd,buff,len);
 }

@@ -4,36 +4,43 @@ void str_echo(int fd)
 {
         char buff[100];
         size_t len;
-
-        len = read(fd,buff,sizeof(buff));
-        writen(fd,buff,len);
+again:
+	while( (len = read(fd,buff,sizeof(buff))) > 0 ){
+		writen(fd,buff,len);
+	}
+	if (len < 0)
+		if (errno == EINTR)
+			goto again;
+		else
+			return;
 }
 
 int main(int argc,char **argv)
 {
 	struct sockaddr_in addr,cliaddr;
-	int serfd,clifd;
+	int listenfd,clifd;
 	socklen_t clilen;
 	int chipid;
 	
 	fputs("starting server\n",stdout);
 	bzero(&addr,sizeof(addr));
-	serfd = socket(AF_INET,SOCK_STREAM,0);
+	listenfd = socket(AF_INET,SOCK_STREAM,0);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(9002);
-	Bind(serfd,(struct sockaddr*)&addr,sizeof(addr));
-	Listen(serfd,10);
+	Bind(listenfd,(struct sockaddr*)&addr,sizeof(addr));
+	Listen(listenfd,10);
 	
 	fputs("server start on port 9002\n",stdout);
 	
 	for(;;){
 		clilen = sizeof(cliaddr);
-		clifd = accept(serfd,(struct sockaddr*)&cliaddr,&clilen);
+		clifd = accept(listenfd,(struct sockaddr*)&cliaddr,&clilen);
 		if( (chipid = fork()) == 0){
-			close(serfd);
+			close(listenfd);
 			str_echo(clifd);
 			close(clifd);
+			exit(0);
 		}
 		close(clifd);
 	}

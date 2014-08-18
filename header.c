@@ -1,6 +1,6 @@
 #include "header.h"
 
-size_t readn(int fd,void *vptr,size_t n)
+ssize_t readn(int fd,void *vptr,size_t n)
 {
         ssize_t nread;
         size_t nleft;
@@ -22,12 +22,12 @@ size_t readn(int fd,void *vptr,size_t n)
         return (n - nleft);
 }
 
-size_t writen(int fd,void *vptr,size_t n)
+ssize_t writen(int fd,void *vptr,size_t n)
 {
         ssize_t nwrite,nleft;
         char   *ptr;
 
-        ptr = vptr;
+        ptr = (char *)vptr;
         nleft = n;
 
         while(nleft > 0){
@@ -61,6 +61,6 @@ void Listen(int fd,int backlog)
 void Bind(int fd,const struct sockaddr *addr,socklen_t len)
 {
 	if( bind(fd,addr,len) != 0){
-		fputs("bind error);
+		fputs("bind error",stderr);
 	}
 }

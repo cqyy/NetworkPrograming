@@ -1,5 +1,13 @@
 #include "../header.h"
-#include "strecho.c"
+
+void str_echo(int fd)
+{
+        char buff[100];
+        size_t len;
+
+        len = readn(fd,buff,sizeof(buff));
+        writen(fd,buff,len);
+}
 
 int main(int argc,char **argv)
 {
@@ -7,7 +15,8 @@ int main(int argc,char **argv)
 	int serfd,clifd;
 	socklen_t clilen;
 	int chipid;
-
+	
+	fputs("starting server\n",stdout);
 	bzero(&addr,sizeof(addr));
 	serfd = socket(AF_INET,SOCK_STREAM,0);
 	addr.sin_family = AF_INET;
@@ -15,7 +24,9 @@ int main(int argc,char **argv)
 	addr.sin_port = 9002;
 	Bind(serfd,(struct sockaddr*)&addr,sizeof(addr));
 	Listen(serfd,10);
-
+	
+	fputs("server start on port 9002\n",stdout);
+	
 	for(;;){
 		clilen = sizeof(cliaddr);
 		clifd = accept(serfd,(struct sockaddr*)&cliaddr,&clilen);

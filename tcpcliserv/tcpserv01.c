@@ -5,7 +5,7 @@ void str_echo(int fd)
         char buff[100];
         size_t len;
 
-        len = readn(fd,buff,sizeof(buff));
+        len = read(fd,buff,sizeof(buff));
         writen(fd,buff,len);
 }
 
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
 	serfd = socket(AF_INET,SOCK_STREAM,0);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = 9002;
+	addr.sin_port = htons(9002);
 	Bind(serfd,(struct sockaddr*)&addr,sizeof(addr));
 	Listen(serfd,10);
 	

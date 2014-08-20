@@ -1,3 +1,10 @@
-*.o
-*.out
-*.swp
+# .gitignore
+*
+# include folders
+!*/
+# include following
+!*.c
+!*.h
+!.gitignore
+!.md
+

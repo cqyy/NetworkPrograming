@@ -23,6 +23,35 @@ ssize_t readn(int fd,void *vptr,size_t n)
         return (n - nleft);
 }
 
+ssize_t readline(int fd,void *vptr,size_t n)
+{
+	
+	size_t nleft;
+	int nread;
+	char c,*ptr;
+
+	ptr = (char *)vptr;
+	nleft = n;
+	while( nleft > 0){
+again:
+		if ( (nread = read(fd,&c,1))==1){
+			*ptr++ = c;
+			nleft--;
+			if ( c == '\n')
+				break;
+		}else if ( nread < 0 && errno == EINTR)	
+			goto again;
+		else if ( nread == 0){              //EOF
+			*ptr = 0;
+			return (n -nleft);
+		}
+		else 
+			return (-1);	             //ERROR
+	}
+	*ptr = 0;
+	return (n - nleft);
+}
+
 ssize_t writen(int fd,void *vptr,size_t n)
 {
         ssize_t nwrite,nleft;
@@ -53,7 +82,7 @@ void Listen(int fd,int backlog)
         }
 
         if(listen(fd,backlog) < 0){
-                fputs("listen error",stderr);
+                fputs("listen error\n",stderr);
         }
 
 }
@@ -61,6 +90,13 @@ void Listen(int fd,int backlog)
 void Bind(int fd,const struct sockaddr *addr,socklen_t len)
 {
 	if( bind(fd,addr,len) != 0){
-		fputs("bind error",stderr);
+		fputs("bind error\n",stderr);
+	}
+}
+
+void Connect(int fd,const struct sockaddr *addr,socklen_t len)
+{
+	if(connect(fd,addr,len) !=0 ){
+		fputs("connect error\n",stderr);
 	}
 }

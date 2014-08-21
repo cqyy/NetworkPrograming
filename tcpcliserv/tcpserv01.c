@@ -1,5 +1,9 @@
 #include "../header.h"
 
+/**
+ * basic echo server,int wait-stop model.
+ */
+
 void str_echo(int fd)
 {
         char buff[100];

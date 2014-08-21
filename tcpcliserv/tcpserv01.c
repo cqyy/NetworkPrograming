@@ -19,6 +19,16 @@ again:
 			return;
 }
 
+void sig_chld(int signo)
+{
+	pid_t pid;
+	int   stat;
+
+	while ( (pid = waitpid(-1,&stat,WNOHANG)) > 0)
+		printf("child %d terminated\n",pid);
+	return;
+}
+
 int main(int argc,char **argv)
 {
 	struct sockaddr_in addr,cliaddr;
@@ -31,15 +41,23 @@ int main(int argc,char **argv)
 	listenfd = socket(AF_INET,SOCK_STREAM,0);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(9002);
+	addr.sin_port = htons(9877);
 	Bind(listenfd,(struct sockaddr*)&addr,sizeof(addr));
 	Listen(listenfd,10);
+	signal(SIGCHLD,sig_chld);	
 	
-	fputs("server start on port 9002\n",stdout);
+	fputs("server start on port 9877\n",stdout);
 	
 	for(;;){
 		clilen = sizeof(cliaddr);
-		clifd = accept(listenfd,(struct sockaddr*)&cliaddr,&clilen);
+		if( (clifd = accept(listenfd,(struct sockaddr*)&cliaddr,&clilen)) < 0){
+			if(errno == EINTR)
+				continue;
+			else{
+				fputs("accept error\n",stderr);
+				exit(1);
+			}
+		}
 		if( (chipid = fork()) == 0){
 			close(listenfd);
 			str_echo(clifd);

@@ -7,6 +7,8 @@
 #include<unistd.h>
 #include<signal.h>
 #include<sys/wait.h>
+#include<sys/select.h>
+#include<sys/time.h>
 
 typedef void Sigfunc(int);
 

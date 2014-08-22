@@ -1,6 +1,8 @@
 #include "../header.h"
+#include "strcliselect02.h"
 
-void str_cli(FILE *fp,int fd)
+
+/*void str_cli(FILE *fp,int fd)
 {
 	char sendline[100],recvline[100];
 
@@ -12,7 +14,7 @@ void str_cli(FILE *fp,int fd)
 		}
 		fputs(recvline,stdout);
 	}
-}
+}*/
 
 int main(int argc, char **argv)
 {

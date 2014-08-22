@@ -83,6 +83,7 @@ void Listen(int fd,int backlog)
 
         if(listen(fd,backlog) < 0){
                 fputs("listen error\n",stderr);
+		exit(1);
         }
 
 }
@@ -91,6 +92,7 @@ void Bind(int fd,const struct sockaddr *addr,socklen_t len)
 {
 	if( bind(fd,addr,len) != 0){
 		fputs("bind error\n",stderr);
+		exit(1);
 	}
 }
 
@@ -98,6 +100,7 @@ void Connect(int fd,const struct sockaddr *addr,socklen_t len)
 {
 	if(connect(fd,addr,len) !=0 ){
 		fputs("connect error\n",stderr);
+		exit(1);
 	}
 }
 

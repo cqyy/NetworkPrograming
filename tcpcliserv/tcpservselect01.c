@@ -10,7 +10,7 @@ int main(int argc,char **argv)
 	socklen_t clilen;
 	struct sockaddr_in cliaddr,servaddr;
 	
-	maxi = 0;
+	maxi = -1;
 	listenfd = socket(AF_INET,SOCK_STREAM,0);
 	maxfd = listenfd;
 
@@ -27,6 +27,7 @@ int main(int argc,char **argv)
 	FD_ZERO(&allset);
 	FD_SET(listenfd,&allset);
 	printf("server start at post %d\n",9877);
+
 	for(;;){
 		rset = allset;
 		nready = select(maxfd+1,&rset,NULL,NULL,NULL);
@@ -48,12 +49,14 @@ int main(int argc,char **argv)
 				fputs("too much connection\n",stderr);
 				exit(1);
 			}
+			FD_SET(connfd,&allset);
+			printf("maxfd %d,maxi %d\n",maxfd,maxi);
 			if ( --nready == 0){
 				continue;
 			}
 		}
 		/*read and write back*/
-		for( i = 0; i < maxi; i++){
+		for( i = 0; i <= maxi; i++){
 			if( (sockfd = client[i]) < 0)
 				continue;
 			if( FD_ISSET(sockfd,&rset)){

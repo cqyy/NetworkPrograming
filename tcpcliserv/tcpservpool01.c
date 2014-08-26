@@ -2,15 +2,12 @@
 
 int main(int argc,char **argv)
 {
-	int client[100],nready;
-	int i,maxi,maxfd,listenfd,connfd,sockfd;
+	int i,maxi,listenfd,connfd,sockfd,nready;
 	ssize_t n;
-	fd_set allset,rset;
 	char buf[100];
 	socklen_t clilen;
 	struct sockaddr_in cliaddr,servaddr;
-	
-	maxi = -1;
+	struct poolfd client[100];          	
 	listenfd = socket(AF_INET,SOCK_STREAM,0);
 	maxfd = listenfd;
 
@@ -18,26 +15,25 @@ int main(int argc,char **argv)
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons(9877);
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	
-	for(i = 0; i < 100; i++){
-		client[i] = -1;
+	client[0].fd = listenfd;
+	client[0].events = POOLRDNORM;	
+	for(i = 1; i < 100; i++){
+		client[i].fd = -1;
 	}
+	maxi = 0;
 	Bind(listenfd,(struct sockaddr*)&servaddr,sizeof(servaddr));
 	Listen(listenfd,100);
-	FD_ZERO(&allset);
-	FD_SET(listenfd,&allset);
 	printf("server start at post %d\n",9877);
 
 	for(;;){
-		rset = allset;
-		nready = select(maxfd+1,&rset,NULL,NULL,NULL);
+		nready = pool(&client,maxi+1,INFTIM);
 		/*receive new connection*/	
-		if(FD_ISSET(listenfd,&rset)){
+		if( client[0].revents & POOLRDNORM)
 			clilen = sizeof(cliaddr);
 			connfd = accept(listenfd,(struct sockaddr*)&cliaddr,&clilen);
 			for(i = 0; i < 100; i++){
-				if(client[i] < 0){
-					client[i] = connfd;
+				if(client[i].fd < 0){
+					client[i].fd = connfd;
 					if(connfd > maxfd)
 						maxfd = connfd;
 					if(i > maxi)
@@ -49,20 +45,26 @@ int main(int argc,char **argv)
 				fputs("too much connection\n",stderr);
 				exit(1);
 			}
-			FD_SET(connfd,&allset);
+			client[i].events = POOLRDNORM;
 			if ( --nready == 0){
 				continue;
 			}
 		}
 		/*read and write back*/
-		for( i = 0; i <= maxi; i++){
-			if( (sockfd = client[i]) < 0)
+		for( i = 1; i <= maxi; i++){
+			if( (sockfd = client[i].fd) < 0)
 				continue;
-			if( FD_ISSET(sockfd,&rset)){
-				if ( (n = read(sockfd,buf,sizeof(buf))) == 0){
+			if( client[i].revents & (POOLRDNORM | POOLERR)){
+				if( (n = read(sockfd,buf,sizeof(buf)) < 0){
+					if(errno == ECONNRESET){
+						/**connection reset by client*/
+						close(sockfd);
+						client[i].fd = -1;
+					}else
+						fputs("read error\n",stderr);	
+				}else if ( n == 0){
 					close(sockfd);
-					client[i] = -1;
-					FD_CLR(sockfd,&allset);
+					client[i].fd = -1;
 				}else
 					writen(sockfd,buf,n);
 				if( --nready == 0)
